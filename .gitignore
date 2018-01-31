@@ -1,0 +1,22 @@
+
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+# Edited by Akshay.L.Aradhya
+################################################################################
+
+/@Visual Studio Files
+*.log
+*.sdf
+*.suo
+/Debug
+/1st Year Project
+/x64/Debug
+*.txt
+*.vcxproj
+*.filters
+*.sln
+*.opensdf
+*.exe
+*.ini
+*.pdb
+*.user
