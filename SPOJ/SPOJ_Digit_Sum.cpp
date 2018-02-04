@@ -4,7 +4,7 @@
 *                  *
 *~~~~~~~~~~~~~~~~~~*/
 
-//http://www.spoj.com/problems/CPCRC1C/
+//http://www.spoj.com/problems/PR003004/
 
 #include <algorithm>
 #include <assert.h>
@@ -21,7 +21,6 @@
 #include <string.h>
 #include <string>
 #include <time.h>
-#include <unordered_set>
 #include <vector>
 
 using namespace std;
@@ -40,7 +39,7 @@ using namespace std;
 #define MOD 1000000007
 
 vector<int> digits;
-ll int DP[10][9 * 10];
+ll int DP[16][9 * 16];
 
 void getDigits(ll int n) {
 	digits.clear();
@@ -94,9 +93,11 @@ int main() {
 
 	MSX(DP, -1);
 
-	ll int l, r;
-	scanf("%lld %lld", &l, &r);
-	while (l != -1 && r != -1) {
+	int t;
+	scanf("%d", &t);
+	REP(tc, t) {
+		ll int l, r;
+		scanf("%lld %lld", &l, &r);
 		getDigits(max((ll int)0, l - 1));
 		ll int res_l = findSum(digits.size() - 1, 0, 1);
 
@@ -104,7 +105,6 @@ int main() {
 		ll int res_r = findSum(digits.size() - 1, 0, 1);
 
 		printf("%lld\n", res_r - res_l);
-		scanf("%lld %lld", &l, &r);
 	}
 
 	return 0;
