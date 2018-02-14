@@ -50,178 +50,52 @@ struct point {
 		x = px;
 		y = py;
 	}
-	bool operator<(const point &rhs) const {
-		if (x < rhs.x) {
-			return true;
-		}
-		if (x > rhs.x) {
-			return false;
-		}
-
-		return y < rhs.y;
-	}
 	point operator+(const point &rhs) const {
 		return point(x + rhs.x, y + rhs.y);
 	}
+	point operator/(const int k) const {
+		return point(x / k, y / k);
+	}
 };
-
-struct point dir[4] = {{0, -1}, {-1, 0}, {1, 0}, {0, 1}};
-vector<point> poly;
-
-ll int gcd(ll int a, ll int b) {
-	if (a == 0) {
-		return b;
-	}
-	return gcd(b % a, a);
-}
-
-// On the polygon is treated as outside
-bool isPointInPolygon(point p) {
-
-	ll int prevSide = 0;
-	int n = poly.size();
-	REP(i, n) {
-		// d = (x−x1)(y2−y1)−(y−y1)(x2−x1)
-		ll int side = (p.x - poly[i].x) * (poly[(i + 1) % n].y - poly[i].y) - (p.y - poly[i].y) * (poly[(i + 1) % n].x - poly[i].x);
-		if (side == 0) {
-			return false;
-		}
-
-		if (prevSide == 0 ||
-			(prevSide < 0 && side < 0) ||
-			(prevSide > 0 && side > 0)) {
-			prevSide = side;
-		}
-		else {
-			return false;
-		}
-	}
-
-	return true;
-}
-
-ll int doubleAreaOfPolygon() {
-	// List of Points must be given in counter clockwise order
-	int n = poly.size();
-	ll int sum1 = 0;
-	REP(i, n) {
-		sum1 += poly[i].x * poly[(i + 1) % n].y;
-	}
-
-	ll int sum2 = 0;
-	REP(i, n) {
-		sum2 += poly[i].y * poly[(i + 1) % n].x;
-	}
-
-	return sum1 - sum2;
-}
-
-ll int countOfBoundaryPoints() {
-
-	int n = poly.size();
-	int extra = 0;
-	REP(i, n) {
-		int x1 = poly[i].x;
-		int y1 = poly[i].y;
-		int x2 = poly[(i + 1) % n].x;
-		int y2 = poly[(i + 1) % n].y;
-		extra += gcd(x1 - x2, y2 - y1) - 1;
-	}
-
-	return n + extra;
-}
-
-vector<point> findAllBoundaryPoints() {
-
-	int n = poly.size();
-	vector<point> extra;
-
-	REP(i, n) {
-		int x1 = poly[i].x;
-		int y1 = poly[i].y;
-		int x2 = poly[(i + 1) % n].x;
-		int y2 = poly[(i + 1) % n].y;
-		ll int f = gcd(abs(x1 - x2), abs(y2 - y1));
-		FOR(i, 1, f - 1) {
-			extra.pb(point(x1 + i * (x2 - x1) / f, y1 + i * (y2 - y1) / f));
-		}
-	}
-
-	REP(i, extra.size()) {
-		printf("EXTRA = %lld %lld\n", extra[i].x, extra[i].y);
-	}
-
-	vector<point> res;
-	res.insert(res.end(), poly.begin(), poly.end());
-	res.insert(res.end(), extra.begin(), extra.end());
-
-	return res;
-}
-
-vector<point> findLatticePoints(int limit) {
-
-	vector<point> res;
-	set<point> v;
-	queue<point> q;
-
-	// Add all the integer points closest to the boundary that are inside
-	REP(i, poly.size()) {
-		q.push(poly[i]);
-	}
-
-	// Find the rest of the points that are inside the polygon.
-	while (q.empty() == false) {
-		point u = q.front();
-		q.pop();
-
-		REP(i, 4) {
-			point next = u + dir[i];
-			if (v.find(next) == v.end() && isPointInPolygon(next)) {
-				res.pb(next);
-				q.push(next);
-				v.insert(next);
-				if (res.size() >= limit) {
-					break;
-				}
-			}
-		}
-		if (res.size() >= limit) {
-			break;
-		}
-	}
-
-	return res;
-}
 
 int main() {
 
-	int t, n;
+	int t;
 	scanf("%d", &t);
 	REP(tc, t) {
+		int n;
 		scanf("%d", &n);
-		poly.clear();
+		vector<point> poly;
 		REP(i, n) {
 			ll int x, y;
 			scanf("%lld %lld", &x, &y);
 			poly.pb(point(x, y));
 		}
-		ll int area = doubleAreaOfPolygon();
-		ll int boundary_points = countOfBoundaryPoints();
-		ll int lattice_points = area + 2 - boundary_points;
-		assert(lattice_points % 2 == 0);
-		lattice_points /= 2;
-		ll int limit = (ll int)floor((long double)n / 10);
-		if (lattice_points < limit) {
-			printf("-1\n");
-		}
-		else {
-			vector<point> res = findLatticePoints(limit);
-			REP(i, res.size()) {
-				printf("%lld %lld\n", res[i].x, res[i].y);
+		int limit = n / 10;
+		vector<point> res;
+		REP(k, limit) {
+			REP(i, 10) {
+				FOR(j, i + 2, 9) {
+					if (i == 0 && j == 9) {
+						continue;
+					}
+					point p1 = poly[k * 10 + i];
+					point p2 = poly[k * 10 + j];
+					point mid = (p1 + p2);
+					if (mid.x % 2 == 0 && mid.y % 2 == 0) {
+						res.push_back(mid / 2);
+						i = 10;
+						j = 10;
+					}
+				}
 			}
+		}
+
+		REP(i, limit) {
+			printf("%lld %lld\n", res[i].x, res[i].y);
 		}
 	}
 	return 0;
 }
 
-//TLE
+//Solved after contest
