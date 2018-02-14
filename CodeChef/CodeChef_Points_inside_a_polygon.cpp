@@ -74,7 +74,7 @@ int main() {
 		int limit = n / 10;
 		vector<point> res;
 		REP(k, limit) {
-			REP(i, 10) {
+			FOR(i, 0, 9) {
 				FOR(j, i + 2, 9) {
 					if (i == 0 && j == 9) {
 						continue;
