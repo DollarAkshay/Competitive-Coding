@@ -47,7 +47,7 @@ int main() {
 	int x2, y2;
 	scanf("%d %d %d %d %d", &R, &x1, &y1, &x2, &y2);
 
-	double dist = sqrtl((double)((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2)));
+	double dist = sqrtl(((double)(x1 - x2) * (x1 - x2) + (double)(y1 - y2) * (y1 - y2)));
 
 	if (x1 == x2 && y1 == y2) {
 		double r = (double)R / 2;
@@ -56,7 +56,7 @@ int main() {
 		printf("%.12lf %.12lf %.12lf\n", xap, yap, r);
 	}
 	else if (dist > R) {
-		printf("%d %d %d\n", x1, x2, R);
+		printf("%d %d %d\n", x1, y1, R);
 	}
 	else {
 		double xap = x2 - (dist + R) * (x2 - x1) / (2 * dist);
@@ -68,4 +68,4 @@ int main() {
 	return 0;
 }
 
-//
+//Solved after Contest
