@@ -67,14 +67,16 @@ ll int nCrMod(int n, int r, int mod) {
 	return x;
 }
 
-ll int nPr(int n, int r) {
-
+ll int fact(int n) {
 	ll int res = 1;
-	FOR(i, n - r + 1, n) {
+	FOR(i, 1, n) {
 		res *= i;
 	}
-
 	return res;
+}
+
+ll int rectCount(ll int m, ll int n, ll int w, ll int h) {
+	return (m - w + 1) * (n - h + 1) % MOD;
 }
 
 int main() {
@@ -90,28 +92,51 @@ int main() {
 		}
 		else {
 			if (k == 2) {
+				ll int hori = nCrMod(m, 2, MOD) * n % MOD;
+				ll int vert = nCrMod(n, 2, MOD) * m % MOD;
+				ll int diag = 0;
+				FOR(i, 2, min(m, n)) {
+					diag = (diag + 2 * rectCount(m, n, i, i) % MOD) % MOD;
+				}
+				printf("%lld\n", fact(2) * (hori + vert + diag) % MOD);
+			}
+			else if (k == 3) {
 				ll int res = 0;
-				ll int rect2x2 = nCrMod(m, 2, MOD) * nCrMod(n, 2, MOD) % MOD;
-				res = (res + rect2x2 * nPr(4, k) % MOD) % MOD;
-				printf("%lld\n", res % MOD);
+				FOR(i, 2, min(m, n)) {
+					res = (res + 4 * rectCount(m, n, i, i) % MOD) % MOD;
+				}
+
+				// # - #    - # -
+				// - # -    # - #
+				FOR(i, 1, min((m - 1) / 2, n - 1)) {
+					res = (res + 2 * rectCount(m, n, 2 * i + 1, i + 1) % MOD) % MOD;
+				}
+
+				//Transpose of Previous
+				FOR(i, 1, min(m - 1, (n - 1) / 2)) {
+					res = (res + 2 * rectCount(m, n, i + 1, 2 * i + 1) % MOD) % MOD;
+				}
+
+				printf("%lld\n", fact(3) * res % MOD);
 			}
 			else {
 				ll int res = 0;
-				// https://math.stackexchange.com/questions/2674022/number-of-rectangles-in-a-grid-of-size-at-least-w-times-h
-				// Rectangles of size atelast 2x2
-				ll int totalRect = nCrMod(m, 2, MOD) * nCrMod(n, 2, MOD) % MOD;
-				res += totalRect * nPr(4, k) % MOD;
-				if (k >= 3) {
-					FOR(i, 3, min(m, n)) {
-						res = (res + (m - i + 1) * (n - i + 1) % MOD * nPr(4, k) % MOD) % MOD;
-						i++;
-					}
+				FOR(i, 2, min(m, n)) {
+					res = (res + rectCount(m, n, i, i) % MOD) % MOD;
 				}
-				printf("%lld\n", res % MOD);
+
+				// - # -
+				// # - #
+				// - # -
+				FOR(i, 1, min((m - 1) / 2, (n - 1) / 2)) {
+					res = (res + rectCount(m, n, 2 * i + 1, 2 * i + 1) % MOD) % MOD;
+				}
+
+				printf("%lld\n", fact(4) * res % MOD);
 			}
 		}
 	}
 	return 0;
 }
 
-//
+//Solved after Contest
