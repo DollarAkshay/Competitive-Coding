@@ -109,8 +109,8 @@ class LazySegmentTree {
 		return recursiveRangeQuerry(low, high, 0, arraySize - 1, 0);
 	}
 
-	T updateTree(int value, int low, int high) {
-		return updateSegmentTree(value, low, high, 0, arraySize - 1, 0);
+	void updateTree(int value, int low, int high) {
+		updateSegmentTree(value, low, high, 0, arraySize - 1, 0);
 	}
 
 	void printTree() {
