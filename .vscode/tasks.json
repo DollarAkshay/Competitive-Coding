@@ -6,7 +6,15 @@
         {
             "label": "C++ Debug",
             "type": "shell",
-            "command": "g++ '${file}' -g -w -o out"
+            "command": "g++",
+            "args": [
+                "'${file}'",
+                "-g",
+                "-w",
+                "-o",
+                "out"
+            ],
+            "problemMatcher": []
         }
     ]
 }
