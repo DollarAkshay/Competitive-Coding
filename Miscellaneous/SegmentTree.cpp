@@ -14,6 +14,7 @@ template <typename T>
 class SegmentTree {
   private:
 	T *segTree;
+	const T MIN_VALUE = numeric_limits<T>::lowest();
 	int treeSize, arraySize;
 
 	void buildTree(vector<T> const &a, int low, int high, int pos) {
