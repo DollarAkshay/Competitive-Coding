@@ -14,6 +14,10 @@
         "xstring": "cpp",
         "xtree": "cpp",
         "initializer_list": "cpp",
-        "stack": "cpp"
+        "stack": "cpp",
+        "cstdlib": "cpp",
+        "bitset": "cpp",
+        "queue": "cpp",
+        "type_traits": "cpp"
     }
 }
