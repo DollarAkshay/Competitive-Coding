@@ -18,6 +18,22 @@
         "cstdlib": "cpp",
         "bitset": "cpp",
         "queue": "cpp",
-        "type_traits": "cpp"
+        "type_traits": "cpp",
+        "iostream": "cpp",
+        "exception": "cpp",
+        "fstream": "cpp",
+        "functional": "cpp",
+        "ios": "cpp",
+        "istream": "cpp",
+        "map": "cpp",
+        "memory": "cpp",
+        "ostream": "cpp",
+        "set": "cpp",
+        "sstream": "cpp",
+        "streambuf": "cpp",
+        "tuple": "cpp",
+        "unordered_map": "cpp",
+        "unordered_set": "cpp",
+        "xiosbase": "cpp"
     }
 }
