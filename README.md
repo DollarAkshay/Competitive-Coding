@@ -1,4 +1,4 @@
-# Competitive-Coding
+# Competitive Coding
 A repository of all my competitive coding solutions from various websites over the years.
 
 | Website       | Profile Link                                                              |
