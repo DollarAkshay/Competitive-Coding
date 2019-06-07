@@ -33,7 +33,7 @@ using namespace std;
 
 int a[1000000];
 
-FILE *fp = fopen("input2.txt", "w");
+FILE *fp = fopen("input.txt", "w");
 
 mt19937 mt(26640195);
 
@@ -115,23 +115,13 @@ string generatenumberstring(int len) {
 
 int main() {
 
-	ll int t = 10;
+	ll int t = 10000;
 	fprintf(fp, "%lld\n", t);
 
 	REP(tc, t) {
-		ll int n = 10000;
+		ll int n = randomInt(2, 20);
 		fprintf(fp, "%lld\n", n);
-		REP(i, n) {
-			a[i] = 10000000;
-			fprintf(fp, "%lld ", a[i]);
-		}
-		fprintf(fp, "\n");
-
-		REP(i, n) {
-			int b = i + 1;
-			fprintf(fp, "%lld ", b);
-		}
-		fprintf(fp, "\n");
+		randomArray(1, 100, n);
 	}
 
 	printf("\nDONE :)\n\n");

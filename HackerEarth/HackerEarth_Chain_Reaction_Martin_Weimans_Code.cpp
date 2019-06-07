@@ -194,160 +194,6 @@ struct Bot {
 
 } bot;
 
-struct Tensor {
-	vector<Tensor> c;
-	fl *c2 = 0;
-	int num;
-
-	Tensor() : c2(0), num(0) {}
-	Tensor(const Tensor &) = delete;
-	~Tensor() {
-		if (c2)
-			_mm_free(c2);
-	}
-	Tensor(Tensor &&other) {
-		c = move(other.c);
-		c2 = other.c2;
-		other.c2 = 0;
-		num = other.num;
-	}
-	Tensor &operator=(Tensor &&other) {
-		c = move(other.c);
-		c2 = other.c2;
-		other.c2 = 0;
-		num = other.num;
-		return *this;
-	}
-	Tensor(int size) : num(size) {
-		c2 = alloc(size);
-	}
-
-	void read(stringstream *fin, int rank) {
-		if (rank == 2 && doTranspose) {
-			int num1, num2;
-			(*fin) >> num1 >> num2;
-			assert(num1);
-			c.reserve(num2);
-			rep(i, 0, num2) {
-				c.emplace_back(num1);
-			}
-			this->num = num2;
-			rep(i, 0, num1) {
-				int num3;
-				if (i) {
-					(*fin) >> num3;
-					assert(num3 == num2);
-				}
-				rep(j, 0, num2) {
-					fl val;
-					(*fin) >> val;
-					c[j].c2[i] = val;
-				}
-			}
-			return;
-		}
-		(*fin) >> num;
-		if (rank == 1) {
-			c2 = alloc(num);
-			rep(i, 0, num)(*fin) >> c2[i];
-			return;
-		}
-		c.reserve(num);
-		rep(i, 0, num) {
-			c.emplace_back();
-			c.back().read(fin, rank - 1);
-		}
-	}
-
-	void print() {
-		printf("[");
-		if (c2) {
-			rep(i, 0, num) {
-				if (c2[i] == 0)
-					printf("0");
-				else
-					printf("%.4f", c2[i]);
-				if (i != num - 1)
-					printf(", ");
-			}
-		}
-		else {
-			rep(i, 0, c.size()) {
-				c[i].print();
-				if (i != sz(c) - 1)
-					printf(", ");
-			}
-		}
-		printf("]");
-	}
-
-	Tensor operator+(const Tensor &other) const {
-		if (c2) {
-			assert(num == other.num);
-			Tensor ret(num);
-			rep(i, 0, num) {
-				ret.c2[i] = c2[i] + other.c2[i];
-			}
-			return ret;
-		}
-		assert(other.c.size() == c.size());
-		Tensor ret;
-		rep(i, 0, sz(c)) {
-			ret.c.push_back(c[i] + other.c[i]);
-		}
-		return ret;
-	}
-
-	Tensor elu() {
-		if (c2) {
-			int size = num;
-			Tensor ret(size);
-			int i = 0;
-			while (i < size) {
-				if (c2[i] > 0)
-					ret.c2[i] = c2[i];
-				else
-					ret.c2[i] = exp(c2[i]) - 1;
-				i++;
-			}
-			return ret;
-		}
-		Tensor ret;
-		rep(i, 0, c.size()) {
-			ret.c.push_back(c[i].elu());
-		}
-		return ret;
-	}
-
-	Tensor sigmoid() {
-		if (c2) {
-			Tensor ret(num);
-			rep(i, 0, num) {
-				ret.c2[i] = 1.0f / (1.0f + exp(-c2[i]));
-			}
-			return ret;
-		}
-		Tensor ret;
-		rep(i, 0, c.size()) {
-			ret.c.push_back(c[i].sigmoid());
-		}
-		return ret;
-	}
-};
-
-Tensor readTensor(stringstream *fin) {
-	string name;
-	int rank;
-	(*fin) >> name >> rank;
-	Tensor ret;
-	ret.read(fin, rank);
-	return ret;
-}
-
-void printPos(int x, int y) {
-	printf("%c%d", 'a' + y, x + 1);
-}
-
 struct Move {
 	int x, y;
 
@@ -403,9 +249,6 @@ float strengthBehind[3];
 float strengthNextto[3];
 float strengthValue[3];
 float strengthCoefficient[3];
-
-void createOpeningBook() {
-}
 
 void computeEvalHelpers() {
 	rep(i, 0, 120) {
@@ -560,10 +403,6 @@ void initEvalConstants() {
 	computeEvalHelpers();
 }
 
-void initOldEvalConstants() {
-	computeEvalHelpers();
-}
-
 char *fileNameConstants;
 
 void initFileConstants() {
@@ -574,11 +413,6 @@ void initFileConstants() {
 float sigmoid(float x) {
 	return 1.0 / (1.0 + exp(-x));
 }
-
-/*float tanh(float x){
-	float tmp=exp(-2*x);
-	return (1.0-tmp)/(1.0+tmp);
-}*/
 
 struct State {
 	char f[BOARD_SIZE][BOARD_SIZE];
@@ -807,10 +641,6 @@ bool rolloutOnlyOneMove = false;
 
 float accurateRollout(State *s, float alpha, float beta) {
 	++rolloutDepth;
-#ifdef DEBUG_POLICY
-	s->print();
-	//getchar();
-#endif
 	float e = s->eval();
 	if (e != 0.5)
 		return e;
@@ -830,10 +660,6 @@ float accurateRollout(State *s, float alpha, float beta) {
 		r -= scoreList[i];
 		if (r < 0) {
 			Move move = moveList[i];
-#ifdef DEBUG_POLICY
-			printf("Chose move: ");
-			move.print();
-#endif
 			s->performMove(move);
 			float sc = 1 - accurateRollout(s, 1 - beta, 1 - alpha);
 			return sc;
