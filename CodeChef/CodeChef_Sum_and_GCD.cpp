@@ -143,6 +143,9 @@ ll int solve(int n) {
 				if (i != j) {
 					gcdVal = gcdVal == -1 ? unique_a[j] : gcd(gcdVal, unique_a[j]);
 				}
+				if (gcdVal != -1 && gcdVal + unique_a[i] <= bestVal) {
+					break;
+				}
 			}
 
 			if (bestVal < gcdVal + unique_a[i]) {
