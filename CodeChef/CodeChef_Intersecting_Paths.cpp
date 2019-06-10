@@ -42,6 +42,8 @@ using namespace std::chrono;
 #define pii pair<int, int>
 #define MOD 1000000007
 
+high_resolution_clock::time_point timer;
+bool inPath[300000];
 int nodeDepth[300000];
 int parent[300000];
 int children[300000];
@@ -78,67 +80,45 @@ int dfs(int node, int depth) {
 	return children[node] + 1;
 }
 
-unordered_set<int> getPath(int a, int b) {
+vector<int> getPath(int a, int b) {
 
-	unordered_set<int> vertSet;
+	vector<int> vertSet;
 	while (a != b) {
 		if (nodeDepth[a] > nodeDepth[b]) {
-			vertSet.insert(a);
+			vertSet.push_back(a);
 			a = parent[a];
 		}
 		else {
-			vertSet.insert(b);
+			vertSet.push_back(b);
 			b = parent[b];
 		}
 	}
-	vertSet.insert(a);
+	vertSet.push_back(a);
 	return vertSet;
-}
-
-int setIntersectionSize(unordered_set<int> p1, unordered_set<int> p2) {
-
-	int res = 0;
-	for (const auto &elem : p2) {
-		if (p1.find(elem) != p1.end()) {
-			res++;
-		}
-	}
-
-	return res;
-}
-
-ll int bruteForce(int u, int v, int n) {
-
-	ll int res = 0;
-	unordered_set<int> uvPath = getPath(u, v);
-
-	REP(i, n) {
-		FOR(j, i, n - 1) {
-			unordered_set<int> abPath = getPath(i, j);
-			if (setIntersectionSize(abPath, uvPath) == 1) {
-				res++;
-			}
-		}
-	}
-
-	return res;
 }
 
 ll int solve(int a, int b) {
 
 	ll int res = 0;
-	unordered_set<int> path = getPath(a, b);
+	vector<int> path = getPath(a, b);
+
+	for (const auto &u : path) {
+		inPath[u] = true;
+	}
 
 	vector<int> childPaths;
 
-	for (const auto &u : path) {
+	if (rand() % 100 <= 0) {
+		//DB("Path Size : %d\n", path.size());
+	}
 
+	for (const auto &u : path) {
 		childPaths.clear();
 		REP(i, g[u].size()) {
 			int v = g[u][i];
-			if (path.find(v) == path.end()) {
+			if (inPath[v] == false) {
 				if (parent[u] == v) {
-					childPaths.push_back((children[0] + 1) - (children[u] + 1));
+					childPaths.push_back(children[0] - children[u]);
 				}
 				else {
 					childPaths.push_back(children[v] + 1);
@@ -149,11 +129,15 @@ ll int solve(int a, int b) {
 		REP(i, childPaths.size()) {
 			res += childPaths[i];
 			FOR(j, i + 1, childPaths.size() - 1) {
-				res += (ll int)childPaths[i] * childPaths[j];
+				res += childPaths[i] * childPaths[j];
 			}
 		}
 
 		res++;
+	}
+
+	for (const auto &u : path) {
+		inPath[u] = false;
 	}
 
 	return res;
@@ -161,11 +145,14 @@ ll int solve(int a, int b) {
 
 int main() {
 
+	DB("BEGIN\n");
 	int t;
 	scanf("%d", &t);
 	REP(tc, t) {
 		int n, q;
-		scanf("%d %d", &n, &q);
+		scanint(n);
+		scanint(q);
+		//scanf("%d %d", &n, &q);
 
 		// Clear globals
 		MSX(nodeDepth, -1);
@@ -175,6 +162,7 @@ int main() {
 			g[i].clear();
 		}
 
+		timer = high_resolution_clock::now();
 		REP(i, n - 1) {
 			int u, v;
 			scanint(u);
@@ -185,9 +173,11 @@ int main() {
 			g[u].push_back(v);
 			g[v].push_back(u);
 		}
-
 		dfs(0, 0);
+		ll int ns = duration_cast<nanoseconds>(high_resolution_clock::now() - timer).count();
+		DB("Time Taken : %.3lf ms\n", ns / 1E6);
 
+		timer = high_resolution_clock::now();
 		REP(i, q) {
 			int a, b;
 			scanint(a);
@@ -200,8 +190,10 @@ int main() {
 			int algoRes = solve(a, b);
 
 			// printf("BF   : %lld\n", bfRes);
-			printf("%lld\n", algoRes);
+			// printf("%lld\n", algoRes);
 		}
+		ns = duration_cast<nanoseconds>(high_resolution_clock::now() - timer).count();
+		DB("Time Taken : %.3lf ms\n", ns / 1E6);
 	}
 	return 0;
 }
