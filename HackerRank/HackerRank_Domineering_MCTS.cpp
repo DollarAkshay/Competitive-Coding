@@ -42,7 +42,7 @@ using namespace std::chrono;
 #define BOARD_SIDE 8
 #define BOARD_SIZE 64
 
-const double C = 0.8;
+const double C = 0;
 const char BLANK = '-';
 const char PLAYER_V = 'v';
 const char PLAYER_H = 'h';
@@ -50,7 +50,7 @@ const int TOKEN_ID_V = 0;
 const int TOKEN_ID_H = 1;
 const int TOKEN_ID_BOTH = 2;
 const int SCORE_WIN = 1;
-const int TIME_LIMIT = 1800 * (CLOCKS_PER_SEC / 1000); // 1500 ms
+const int TIME_LIMIT = 1700 * (CLOCKS_PER_SEC / 1000); // 1700 ms
 
 class Move {
   public:
@@ -231,7 +231,7 @@ class GameState {
 
 class Node {
   public:
-	int score;
+	double score;
 	int visits;
 	class Move move;
 	class Node *firstChild;
@@ -252,15 +252,12 @@ class Node {
 	}
 
 	inline double calcUCB(int parentVisits) {
-		if (visits == 0) {
-			return 1E32;
-		}
-		return (double)score / visits + C * sqrt((double)log(parentVisits) / visits);
+		return visits <= 10 ? 1E32 / visits : score / visits;
 	}
 };
 
 FILE *treeFp = fopen("D:\\Competitive_Coding\\data\\tree_small.json", "w+");
-FILE *fp = fopen("D:\\Competitive_Coding\\data\\data_1.csv", "w+");
+FILE *fp = fopen("D:\\Competitive_Coding\\data\\data_6.csv", "w+");
 
 int mctsIterations;
 int nodesExpanded;
@@ -393,38 +390,38 @@ void backPropogateScore(vector<int> &searchList, int simScore) {
 
 void MCTSIteration(class GameState game) {
 
-	long long int ns;
-	high_resolution_clock::time_point timer;
+	// long long int ns;
+	// high_resolution_clock::time_point timer;
 	vector<int> searchList;
 
 	mctsIterations += 1;
 
 	// Exploration
-	timer = high_resolution_clock::now();
+	// timer = high_resolution_clock::now();
 	class Node *nodePtr = exploreTree(game, searchList);
-	ns = duration_cast<nanoseconds>(high_resolution_clock::now() - timer).count();
-	fprintf(fp, "%lld,", ns);
+	// ns = duration_cast<nanoseconds>(high_resolution_clock::now() - timer).count();
+	// fprintf(fp, "%lld,", ns);
 	// DB("Explored\n");
 
 	//Expansion
-	timer = high_resolution_clock::now();
+	// timer = high_resolution_clock::now();
 	nodePtr = expandNode(nodePtr, game);
-	ns = duration_cast<nanoseconds>(high_resolution_clock::now() - timer).count();
-	fprintf(fp, "%lld,", ns);
+	// ns = duration_cast<nanoseconds>(high_resolution_clock::now() - timer).count();
+	// fprintf(fp, "%lld,", ns);
 	// DB("Expanded\n");
 
 	//Simulate
-	timer = high_resolution_clock::now();
+	// timer = high_resolution_clock::now();
 	int simScore = simulateRandomMoves(game);
-	ns = duration_cast<nanoseconds>(high_resolution_clock::now() - timer).count();
-	fprintf(fp, "%lld,", ns);
+	// ns = duration_cast<nanoseconds>(high_resolution_clock::now() - timer).count();
+	// fprintf(fp, "%lld,", ns);
 	// DB("Simulated\n");
 
 	//Backpropogate
-	timer = high_resolution_clock::now();
+	// timer = high_resolution_clock::now();
 	backPropogateScore(searchList, simScore);
-	ns = duration_cast<nanoseconds>(high_resolution_clock::now() - timer).count();
-	fprintf(fp, "%lld\n", ns);
+	// ns = duration_cast<nanoseconds>(high_resolution_clock::now() - timer).count();
+	// fprintf(fp, "%lld\n", ns);
 	// DB("Backpropogated\n");
 }
 
@@ -437,13 +434,13 @@ class Move getBestMove() {
 	simulationLosses = 0;
 	backpropNodes = 0;
 
-	fprintf(fp, "search,expansion,simulation,backprop\n");
-	// while (!checkTime()) {
-	REP(i, 1000000) {
-		MCTSIteration(game);
+	// fprintf(fp, "search,expansion,simulation,backprop\n");
+	while (!checkTime()) {
+		REP(i, 250) {
+			MCTSIteration(game);
+		}
 	}
-	// }
-	fflush(fp);
+	// fflush(fp);
 
 	// debugTreeToFile(treeFp, rootNode, -1, 0, 1);
 
