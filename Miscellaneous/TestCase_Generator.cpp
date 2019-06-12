@@ -32,10 +32,19 @@ using namespace std;
 #define MOD 1000000007
 
 int a[1000000];
+vector<int> graph[1000000];
+int degree[1000000];
 
-FILE *fp = fopen("input.txt", "w");
+FILE *fp = fopen(".\\data\\input.txt", "w");
 
-mt19937 mt(26640195);
+mt19937 mt(time(NULL));
+
+void printArray(vector<ll int> v) {
+	REP(i, v.size()) {
+		fprintf(fp, "%lld ", v[i]);
+	}
+	fprintf(fp, "\n");
+}
 
 ll int randomInt(ll int low, ll int high) {
 
@@ -65,12 +74,13 @@ void randomUpperString(int len) {
 	fprintf(fp, "\n");
 }
 
-void randomArray(ll int low, ll int high, int n) {
+vector<ll int> randomArray(ll int low, ll int high, int n) {
 
+	vector<ll int> res;
 	REP(i, n) {
-		fprintf(fp, "%lld ", randomInt(low, high));
+		res.push_back(randomInt(low, high));
 	}
-	fprintf(fp, "\n");
+	return res;
 }
 
 string generatenumberstring(int len) {
@@ -113,15 +123,78 @@ string generatenumberstring(int len) {
 	return res;
 }
 
+// Create and print a tree with first node index as 1
+void generateRandomTree(int n) {
+
+	// https://en.wikipedia.org/wiki/Pr%C3%BCfer_sequence
+	vector<ll int> sequence = randomArray(1, n - 1, n - 2);
+
+	FOR(i, 1, n) {
+		degree[i] = 1;
+		graph[i].clear();
+	}
+
+	REP(i, sequence.size()) {
+		degree[sequence[i]] += 1;
+	}
+
+	REP(i, sequence.size()) {
+		int u = sequence[i];
+		FOR(j, 1, n) {
+			if (degree[j] == 1) {
+				graph[u].push_back(j);
+				graph[j].push_back(u);
+				degree[u] -= 1;
+				degree[j] -= 1;
+				break;
+			}
+		}
+	}
+
+	int u = 0, v = 0;
+	FOR(i, 1, n) {
+		if (degree[i] == 1) {
+			if (u == 0) {
+				u = i;
+			}
+			else {
+				v = i;
+			}
+		}
+	}
+
+	graph[u].push_back(v);
+	graph[v].push_back(u);
+	degree[u] -= 1;
+	degree[v] -= 1;
+
+	FOR(i, 1, n) {
+		REP(j, graph[i].size()) {
+			int v = graph[i][j];
+			if (i < v) {
+				fprintf(fp, "%d %d\n", i, v);
+			}
+		}
+	}
+}
+
 int main() {
 
-	ll int t = 10000;
+	ll int t = randomInt(1, 1);
 	fprintf(fp, "%lld\n", t);
 
 	REP(tc, t) {
-		ll int n = randomInt(2, 20);
-		fprintf(fp, "%lld\n", n);
-		randomArray(1, 100, n);
+		ll int n = randomInt(10000, 10000);
+		ll int q = randomInt(30000, 30000);
+		fprintf(fp, "%lld %lld\n", n, q);
+
+		generateRandomTree(n);
+
+		REP(i, q) {
+			ll int u = randomInt(1, n);
+			ll int v = randomInt(1, n);
+			fprintf(fp, "%lld %lld\n", u, v);
+		}
 	}
 
 	printf("\nDONE :)\n\n");
