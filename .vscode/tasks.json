@@ -12,7 +12,7 @@
                 "-g",
                 "-w",
                 "-o",
-                "out"
+                ".\\data\\out"
             ],
             "problemMatcher": []
         }

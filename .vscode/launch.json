@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "preLaunchTask": "C++ Debug",
-            "program": "${workspaceFolder}/out.exe",
+            "program": "${workspaceFolder}/data/out.exe",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

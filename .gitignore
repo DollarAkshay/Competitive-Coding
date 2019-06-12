@@ -5,3 +5,5 @@
 *.exe
 *.ini
 /.vscode
+/.visualstudio
+data/

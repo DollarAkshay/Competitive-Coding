@@ -34,6 +34,8 @@
         "tuple": "cpp",
         "unordered_map": "cpp",
         "unordered_set": "cpp",
-        "xiosbase": "cpp"
+        "xiosbase": "cpp",
+        "chrono": "cpp",
+        "ratio": "cpp"
     }
 }
