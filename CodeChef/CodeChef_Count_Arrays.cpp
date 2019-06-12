@@ -61,6 +61,20 @@ int zeroCount(const vector<int> &v) {
 	return res;
 }
 
+ll int fastPowMod(ll int b, ll int e) {
+
+	if (e == 0) {
+		return 1;
+	}
+	else if (e % 2 == 1) {
+		return fastPowMod(b, e - 1) * b % MOD;
+	}
+	else {
+		ll int res = fastPowMod(b, e / 2);
+		return (res * res) % MOD;
+	}
+}
+
 ll int bruteforce(int n, int m, int k) {
 
 	set<vector<int>> seq_set;
@@ -100,6 +114,16 @@ ll int bruteforce(int n, int m, int k) {
 	return seq_set.size();
 }
 
+ll int solve(int n, int m, int k) {
+
+	ll int res = 0;
+
+	REP(i, k) {
+		res = (res + ((fastPowMod(i + 1, n) - fastPowMod(i, n)) % MOD * (fastPowMod(i + 1, m) - fastPowMod(i, m)) % MOD) % MOD + MOD) % MOD;
+	}
+	return res;
+}
+
 int main() {
 
 	int t;
@@ -108,8 +132,9 @@ int main() {
 		int n, m, k;
 		scanf("%d %d %d", &n, &m, &k);
 
-		ll int bfRes = bruteforce(n, m, k);
-		printf("BF : %lld\n\n\n", bfRes);
+		// ll int bfRes = bruteforce(n, m, k);
+		ll int algoRes = solve(n, m, k);
+		printf("%lld\n", algoRes);
 	}
 	return 0;
 }
