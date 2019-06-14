@@ -174,13 +174,17 @@ class GameState {
 	}
 
 	// Generate moves for a given board state
+	// Do not generate moves for a terminal state
 	void generateMoves() {
 		moveCount = 0;
-		int turnId = isPlayerTurn ? playerId : opponentId;
-		REP(i, SIZE) {
-			if (board[turnId][i] > 0) {
-				moveList[moveCount] = Move(i);
-				moveCount += 1;
+
+		if (playerWinState == false && opponentWinState == false && drawState == false) {
+			int turnId = isPlayerTurn ? playerId : opponentId;
+			REP(i, SIZE) {
+				if (board[turnId][i] > 0) {
+					moveList[moveCount] = Move(i);
+					moveCount += 1;
+				}
 			}
 		}
 	}
@@ -362,6 +366,7 @@ class Node *expandNode(class Node *nodePtr, class GameState &game) {
 	if (nodePtr->visits != 0 && nodePtr->childCount == -1) {
 		game.generateMoves();
 		nodePtr->childCount = game.moveCount;
+		nodesExpanded += 1;
 		if (nodePtr->childCount == 0) {
 			return nodePtr;
 		}
@@ -369,7 +374,6 @@ class Node *expandNode(class Node *nodePtr, class GameState &game) {
 		REP(i, game.moveCount) {
 			tree[nodeCount].move = game.moveList[i];
 			nodeCount += 1;
-			nodesExpanded += 1;
 		}
 		game.doMove(nodePtr->firstChild->move);
 		return nodePtr->firstChild;
@@ -390,11 +394,11 @@ int simulateRandomMoves(class GameState &game) {
 	}
 
 	if (game.playerWinState) {
-		score += SCORE_WIN + game.winScoreDiff * 0.1;
+		score = SCORE_WIN + game.winScoreDiff * 0.1;
 		simulationWins += 1;
 	}
 	else if (game.opponentWinState) {
-		score -= SCORE_WIN + game.winScoreDiff * 0.1;
+		score = -SCORE_WIN + game.winScoreDiff * 0.1;
 		simulationLosses += 1;
 	}
 	return score;
