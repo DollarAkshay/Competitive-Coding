@@ -40,6 +40,7 @@ using namespace std::chrono;
 #define ull unsigned long long
 #define ll long long
 #define SIZE 6
+#define CYCLE_SIZE 13 // SIZE*2 + 1
 
 const double C = 1.2;
 const char INIT_COUNT = 4;
@@ -49,6 +50,7 @@ const int TIME_LIMIT = 1700 * (CLOCKS_PER_SEC / 1000); // 1700 ms
 class Move {
   public:
 	int pos;
+	bool getFreeTurn;
 
 	Move() {
 		pos = -1;
@@ -56,6 +58,11 @@ class Move {
 
 	Move(int pos) {
 		this->pos = pos;
+	}
+
+	Move(int pos, bool getFreeTurn) {
+		this->pos = pos;
+		this->getFreeTurn = getFreeTurn;
 	}
 
 	bool operator==(const class Move rhs) const {
@@ -182,7 +189,7 @@ class GameState {
 			int turnId = isPlayerTurn ? playerId : opponentId;
 			REP(i, SIZE) {
 				if (board[turnId][i] > 0) {
-					moveList[moveCount] = Move(i);
+					moveList[moveCount] = Move(i, board[turnId][i] % CYCLE_SIZE == SIZE - i);
 					moveCount += 1;
 				}
 			}
@@ -258,6 +265,7 @@ class Node {
   public:
 	double score;
 	int visits;
+	bool isPlayerNode;
 	class Move move;
 	class Node *firstChild;
 	int childCount;
@@ -281,8 +289,8 @@ class Node {
 	}
 };
 
-// FILE *treeFp = fopen("D:\\Competitive_Coding\\data\\tree.json", "w+");
-// FILE *fp = fopen("D:\\Competitive_Coding\\data\\data_6.csv", "w+");
+FILE *treeFp = fopen("D:\\Competitive_Coding\\data\\tree.json", "w+");
+FILE *fp = fopen("D:\\Competitive_Coding\\data\\data_6.csv", "w+");
 
 int mctsIterations;
 int nodesExpanded;
@@ -313,14 +321,14 @@ int debugTreeToFile(FILE *treeFp, class Node *node, int parentId, int id, int de
 
 	int curId = ++id;
 	if (parentId != -1) {
-		fprintf(treeFp, "  { \"nodeID\": %d, \"parentID\": %d, \"nodeType\": \"%c\", \"string\": \"%.2f/%d\" }, \n", curId, parentId, depth % 2 == 0 ? 'O' : 'P', node->score, node->visits);
+		fprintf(treeFp, "  { \"nodeID\": %d, \"parentID\": %d, \"nodeType\": \"%c\", \"string\": \"%.2f/%d\" }, \n", curId, parentId, node->isPlayerNode ? 'P' : 'O', node->score, node->visits);
 	}
 	REP(i, node->childCount) {
 		id = debugTreeToFile(treeFp, node->firstChild + i, curId, id, depth + 1);
 	}
 
 	if (parentId < 0) {
-		fprintf(treeFp, "  { \"nodeID\": %d, \"parentID\": null, \"nodeType\": \"%c\", \"string\": \"%.2f/%d\" }\n", curId, depth % 2 == 0 ? 'O' : 'P', node->score, node->visits);
+		fprintf(treeFp, "  { \"nodeID\": %d, \"parentID\": null, \"nodeType\": \"%c\", \"string\": \"%.2f/%d\" }\n", curId, node->isPlayerNode ? 'P' : 'O', node->score, node->visits);
 		fprintf(treeFp, "]\n");
 		DB("Done\n");
 		fflush(treeFp);
@@ -330,12 +338,12 @@ int debugTreeToFile(FILE *treeFp, class Node *node, int parentId, int id, int de
 }
 
 // Find a leaf node
-class Node *exploreTree(class GameState &game, vector<pair<int, bool>> &searchList) {
+class Node *exploreTree(class GameState &game, vector<int> &searchList) {
 
 	class Node *parent = rootNode;
 	bool playerNode = false;
 
-	searchList.push_back(make_pair(parent - &tree[0], playerNode));
+	searchList.push_back(parent - &tree[0]);
 	playerNode = true;
 
 	while (parent->childCount > 0) {
@@ -351,7 +359,7 @@ class Node *exploreTree(class GameState &game, vector<pair<int, bool>> &searchLi
 			}
 		}
 		parent = parent->firstChild + bestChildIndex;
-		searchList.push_back(make_pair(parent - &tree[0], playerNode));
+		searchList.push_back(parent - &tree[0]);
 		if (game.doMove(parent->move) == false) {
 			playerNode = !playerNode;
 		}
@@ -361,7 +369,7 @@ class Node *exploreTree(class GameState &game, vector<pair<int, bool>> &searchLi
 
 // If a given node has already been visited atleast once
 // expand the node by finding its children and choosing one of them
-class Node *expandNode(class Node *nodePtr, class GameState &game) {
+class Node *expandNode(class Node *nodePtr, class GameState &game, vector<int> &searchList) {
 
 	if (nodePtr->visits != 0 && nodePtr->childCount == -1) {
 		game.generateMoves();
@@ -371,11 +379,15 @@ class Node *expandNode(class Node *nodePtr, class GameState &game) {
 			return nodePtr;
 		}
 		nodePtr->firstChild = &tree[nodeCount];
+		bool isParentPlayerNode = nodePtr->isPlayerNode;
 		REP(i, game.moveCount) {
-			tree[nodeCount].move = game.moveList[i];
+			class Move childMove = game.moveList[i];
+			tree[nodeCount].move = childMove;
+			tree[nodeCount].isPlayerNode = childMove.getFreeTurn == true ? isParentPlayerNode : !isParentPlayerNode;
 			nodeCount += 1;
 		}
 		game.doMove(nodePtr->firstChild->move);
+		searchList.push_back(nodePtr->firstChild - &tree[0]);
 		return nodePtr->firstChild;
 	}
 	else {
@@ -405,12 +417,11 @@ int simulateRandomMoves(class GameState &game) {
 }
 
 //Backpropogate the scores up the tree
-void backPropogateScore(vector<pair<int, bool>> &searchList, int simScore) {
+void backPropogateScore(vector<int> &searchList, int simScore) {
 
 	REP(i, searchList.size()) {
-		int nodeIndex = searchList[i].first;
-		tree[nodeIndex].visits += 1;
-		tree[nodeIndex].score += searchList[i].second ? simScore : -simScore;
+		tree[searchList[i]].visits += 1;
+		tree[searchList[i]].score += tree[searchList[i]].isPlayerNode ? simScore : -simScore;
 		backpropNodes += 1;
 	}
 
@@ -421,7 +432,7 @@ void MCTSIteration(class GameState game) {
 
 	// long long int ns;
 	// high_resolution_clock::time_point timer;
-	vector<pair<int, bool>> searchList;
+	vector<int> searchList;
 
 	mctsIterations += 1;
 
@@ -434,7 +445,7 @@ void MCTSIteration(class GameState game) {
 
 	//Expansion
 	// timer = high_resolution_clock::now();
-	nodePtr = expandNode(nodePtr, game);
+	nodePtr = expandNode(nodePtr, game, searchList);
 	// ns = duration_cast<nanoseconds>(high_resolution_clock::now() - timer).count();
 	// fprintf(fp, "%lld,", ns);
 	// DB("Expanded\n");
@@ -451,7 +462,7 @@ void MCTSIteration(class GameState game) {
 	backPropogateScore(searchList, simScore);
 	// ns = duration_cast<nanoseconds>(high_resolution_clock::now() - timer).count();
 	// fprintf(fp, "%lld\n", ns);
-	// DB("Backpropogated\n");
+	// DB("Backpropogated\n\n");
 }
 
 class Move getBestMove() {
@@ -520,6 +531,7 @@ void readInput() {
 	nodeCount = 0;
 	rootNode = &tree[nodeCount];
 	rootNode->visits = 1;
+	rootNode->isPlayerNode = false;
 	nodeCount += 1;
 }
 
