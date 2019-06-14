@@ -42,7 +42,7 @@ using namespace std::chrono;
 #define SIZE 6
 #define CYCLE_SIZE 13 // SIZE*2 + 1
 
-const double C = 1.2;
+const double C = 1.20;
 const char INIT_COUNT = 4;
 const double SCORE_WIN = 1.0;
 const int TIME_LIMIT = 1700 * (CLOCKS_PER_SEC / 1000); // 1700 ms
