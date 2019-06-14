@@ -289,8 +289,8 @@ class Node {
 	}
 };
 
-FILE *treeFp = fopen("D:\\Competitive_Coding\\data\\tree.json", "w+");
-FILE *fp = fopen("D:\\Competitive_Coding\\data\\data_6.csv", "w+");
+// FILE *treeFp = fopen("D:\\Competitive_Coding\\data\\tree.json", "w+");
+// FILE *fp = fopen("D:\\Competitive_Coding\\data\\data_6.csv", "w+");
 
 int mctsIterations;
 int nodesExpanded;
@@ -312,7 +312,7 @@ inline bool checkTime() {
 }
 
 // Write the tree state to a file
-int debugTreeToFile(FILE *treeFp, class Node *node, int parentId, int id, int depth) {
+int debugTreeToFile(FILE *treeFp, class Node *node, int parentId, int parentVisits, int id, int depth) {
 
 	if (parentId < 0) {
 		DB("Writing Tree ...");
@@ -321,14 +321,16 @@ int debugTreeToFile(FILE *treeFp, class Node *node, int parentId, int id, int de
 
 	int curId = ++id;
 	if (parentId != -1) {
-		fprintf(treeFp, "  { \"nodeID\": %d, \"parentID\": %d, \"nodeType\": \"%c\", \"string\": \"%.2f/%d\" }, \n", curId, parentId, node->isPlayerNode ? 'P' : 'O', node->score, node->visits);
+		fprintf(treeFp, "  { \"nodeID\": %d, \"parentID\": %d, \"nodeType\": \"%c\", \"string\": \"%.2f/%d\",  \"UCBValue\": \"%.3f\" }, \n",
+				curId, parentId, node->isPlayerNode ? 'P' : 'O', node->score, node->visits, node->calcUCB(parentVisits));
 	}
 	REP(i, node->childCount) {
-		id = debugTreeToFile(treeFp, node->firstChild + i, curId, id, depth + 1);
+		id = debugTreeToFile(treeFp, node->firstChild + i, curId, node->visits, id, depth + 1);
 	}
 
 	if (parentId < 0) {
-		fprintf(treeFp, "  { \"nodeID\": %d, \"parentID\": null, \"nodeType\": \"%c\", \"string\": \"%.2f/%d\" }\n", curId, node->isPlayerNode ? 'P' : 'O', node->score, node->visits);
+		fprintf(treeFp, "  { \"nodeID\": %d, \"parentID\": null, \"nodeType\": \"%c\", \"string\": \"%.2f/%d\",  \"UCBValue\": \"%.3f\" }\n",
+				curId, node->isPlayerNode ? 'P' : 'O', node->score, node->visits, node->calcUCB(parentVisits));
 		fprintf(treeFp, "]\n");
 		DB("Done\n");
 		fflush(treeFp);
@@ -341,12 +343,9 @@ int debugTreeToFile(FILE *treeFp, class Node *node, int parentId, int id, int de
 class Node *exploreTree(class GameState &game, vector<int> &searchList) {
 
 	class Node *parent = rootNode;
-	bool playerNode = false;
-
-	searchList.push_back(parent - &tree[0]);
-	playerNode = true;
 
 	while (parent->childCount > 0) {
+		searchList.push_back(parent - &tree[0]);
 		//Find Maximum UCB
 		double bestUCB = -1E32;
 		int bestChildIndex = -1;
@@ -359,11 +358,10 @@ class Node *exploreTree(class GameState &game, vector<int> &searchList) {
 			}
 		}
 		parent = parent->firstChild + bestChildIndex;
-		searchList.push_back(parent - &tree[0]);
-		if (game.doMove(parent->move) == false) {
-			playerNode = !playerNode;
-		}
+		game.doMove(parent->move);
 	}
+
+	searchList.push_back(parent - &tree[0]);
 	return parent;
 }
 
@@ -379,11 +377,9 @@ class Node *expandNode(class Node *nodePtr, class GameState &game, vector<int> &
 			return nodePtr;
 		}
 		nodePtr->firstChild = &tree[nodeCount];
-		bool isParentPlayerNode = nodePtr->isPlayerNode;
 		REP(i, game.moveCount) {
-			class Move childMove = game.moveList[i];
-			tree[nodeCount].move = childMove;
-			tree[nodeCount].isPlayerNode = childMove.getFreeTurn == true ? isParentPlayerNode : !isParentPlayerNode;
+			tree[nodeCount].move = game.moveList[i];
+			tree[nodeCount].isPlayerNode = game.isPlayerTurn;
 			nodeCount += 1;
 		}
 		game.doMove(nodePtr->firstChild->move);
@@ -482,14 +478,14 @@ class Move getBestMove() {
 	}
 	// fflush(fp);
 
-	// debugTreeToFile(treeFp, rootNode, -1, 0, 1);
+	// debugTreeToFile(treeFp, rootNode, -1, 0, 0, 1);
 
 	// Find the best move and return it
-	int bestMoveScore = 0;
+	double bestMoveScore = -1E32;
 	class Move bestMove;
 	REP(i, rootNode->childCount) {
 		class Node *child = rootNode->firstChild + i;
-		int curMoveScore = child->visits;
+		double curMoveScore = child->score / child->visits;
 		if (curMoveScore > bestMoveScore) {
 			bestMoveScore = curMoveScore;
 			bestMove = child->move;
