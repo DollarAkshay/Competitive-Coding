@@ -42,7 +42,7 @@ using namespace std::chrono;
 #define BOARD_SIDE 8
 #define BOARD_SIZE 64
 
-const double C = 0;
+const double C = 1.2;
 const char BLANK = '-';
 const char PLAYER_V = 'v';
 const char PLAYER_H = 'h';
@@ -252,7 +252,7 @@ class Node {
 	}
 
 	inline double calcUCB(int parentVisits) {
-		return visits <= 10 ? 1E32 / visits : score / visits;
+		return visits == 0 ? 1E32 : score / visits + C * sqrt(log(parentVisits) / visits);
 	}
 };
 
