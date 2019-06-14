@@ -309,14 +309,14 @@ int debugTreeToFile(FILE *treeFp, class Node *node, int parentId, int id, int de
 
 	int curId = ++id;
 	if (parentId != -1) {
-		fprintf(treeFp, "  { \"nodeID\": %d, \"parentID\": %d, \"nodeType\": \"%c\", \"string\": \"%d/%d\" }, \n", curId, parentId, depth % 2 == 0 ? 'O' : 'P', node->score, node->visits);
+		fprintf(treeFp, "  { \"nodeID\": %d, \"parentID\": %d, \"nodeType\": \"%c\", \"string\": \"%.2f/%d\" }, \n", curId, parentId, depth % 2 == 0 ? 'O' : 'P', node->score, node->visits);
 	}
 	REP(i, node->childCount) {
 		id = debugTreeToFile(treeFp, node->firstChild + i, curId, id, depth + 1);
 	}
 
 	if (parentId < 0) {
-		fprintf(treeFp, "  { \"nodeID\": %d, \"parentID\": null, \"nodeType\": \"%c\", \"string\": \"%d/%d\" }\n", curId, depth % 2 == 0 ? 'O' : 'P', node->score, node->visits);
+		fprintf(treeFp, "  { \"nodeID\": %d, \"parentID\": null, \"nodeType\": \"%c\", \"string\": \"%.2f/%d\" }\n", curId, depth % 2 == 0 ? 'O' : 'P', node->score, node->visits);
 		fprintf(treeFp, "]\n");
 		DB("Done\n");
 		fflush(treeFp);
@@ -348,7 +348,9 @@ class Node *exploreTree(class GameState &game, vector<pair<int, bool>> &searchLi
 		}
 		parent = parent->firstChild + bestChildIndex;
 		searchList.push_back(make_pair(parent - &tree[0], playerNode));
-		playerNode = game.doMove(parent->move);
+		if (game.doMove(parent->move) == false) {
+			playerNode = !playerNode;
+		}
 	}
 	return parent;
 }
