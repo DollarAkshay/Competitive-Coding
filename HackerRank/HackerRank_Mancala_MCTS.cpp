@@ -47,7 +47,7 @@ const char INIT_COUNT = 4;
 const double SCORE_WIN = 1.0;
 const int TIME_LIMIT = 1700 * (CLOCKS_PER_SEC / 1000); // 1700 ms
 
-class Move {
+struct Move {
   public:
 	int pos;
 	bool getFreeTurn;
@@ -65,12 +65,12 @@ class Move {
 		this->getFreeTurn = getFreeTurn;
 	}
 
-	bool operator==(const class Move rhs) const {
+	bool operator==(const struct Move rhs) const {
 		return pos == rhs.pos;
 	}
 };
 
-class GameState {
+struct GameState {
 
   public:
 	int playerId, opponentId;
@@ -84,7 +84,7 @@ class GameState {
 	int winScoreDiff = 0;
 	bool playerWinState, opponentWinState, drawState;
 
-	class Move moveList[SIZE];
+	struct Move moveList[SIZE];
 	int moveCount = 0;
 
 	GameState() {
@@ -127,7 +127,7 @@ class GameState {
 	}
 
 	// Do a move and return whether or not it is still the players turn
-	bool doMove(class Move move) {
+	bool doMove(struct Move move) {
 		int pos = move.pos;
 		int turnPlayerId = isPlayerTurn ? playerId : opponentId;
 		int stones = board[turnPlayerId][pos];
@@ -261,13 +261,13 @@ class GameState {
 	}
 };
 
-class Node {
+struct Node {
   public:
 	double score;
 	int visits;
 	bool isPlayerNode;
-	class Move move;
-	class Node *firstChild;
+	struct Move move;
+	struct Node *firstChild;
 	int childCount;
 
 	Node() {
@@ -300,19 +300,19 @@ int simulationLosses;
 int backpropNodes;
 
 int nodeCount;
-vector<class Node> tree(10000000);
-class Node *rootNode;
+vector<struct Node> tree(10000000);
+struct Node *rootNode;
 
 clock_t turnClock;
 
-class GameState game;
+struct GameState game;
 
 inline bool checkTime() {
 	return clock() - turnClock >= TIME_LIMIT ? true : false;
 }
 
 // Write the tree state to a file
-int debugTreeToFile(FILE *treeFp, class Node *node, int parentId, int parentVisits, int id, int depth) {
+int debugTreeToFile(FILE *treeFp, struct Node *node, int parentId, int parentVisits, int id, int depth) {
 
 	if (parentId < 0) {
 		DB("Writing Tree ...");
@@ -340,9 +340,9 @@ int debugTreeToFile(FILE *treeFp, class Node *node, int parentId, int parentVisi
 }
 
 // Find a leaf node
-class Node *exploreTree(class GameState &game, vector<int> &searchList) {
+struct Node *exploreTree(struct GameState &game, vector<int> &searchList) {
 
-	class Node *parent = rootNode;
+	struct Node *parent = rootNode;
 
 	while (parent->childCount > 0) {
 		searchList.push_back(parent - &tree[0]);
@@ -350,7 +350,7 @@ class Node *exploreTree(class GameState &game, vector<int> &searchList) {
 		double bestUCB = -1E32;
 		int bestChildIndex = -1;
 		REP(i, parent->childCount) {
-			class Node *child = parent->firstChild + i;
+			struct Node *child = parent->firstChild + i;
 			double curUCB = child->calcUCB(parent->visits);
 			if (curUCB > bestUCB) {
 				bestUCB = curUCB;
@@ -367,7 +367,7 @@ class Node *exploreTree(class GameState &game, vector<int> &searchList) {
 
 // If a given node has already been visited atleast once
 // expand the node by finding its children and choosing one of them
-class Node *expandNode(class Node *nodePtr, class GameState &game, vector<int> &searchList) {
+struct Node *expandNode(struct Node *nodePtr, struct GameState &game, vector<int> &searchList) {
 
 	if (nodePtr->visits != 0 && nodePtr->childCount == -1) {
 		game.generateMoves();
@@ -392,7 +392,7 @@ class Node *expandNode(class Node *nodePtr, class GameState &game, vector<int> &
 }
 
 // Simulate a set of random moves and return the score of the final state
-int simulateRandomMoves(class GameState &game) {
+int simulateRandomMoves(struct GameState &game) {
 
 	int score = 0;
 	while (game.playerWinState == false && game.opponentWinState == false && game.drawState == false) {
@@ -424,7 +424,7 @@ void backPropogateScore(vector<int> &searchList, int simScore) {
 	backpropNodes += 1;
 }
 
-void MCTSIteration(class GameState game) {
+void MCTSIteration(struct GameState game) {
 
 	// long long int ns;
 	// high_resolution_clock::time_point timer;
@@ -434,7 +434,7 @@ void MCTSIteration(class GameState game) {
 
 	// Exploration
 	// timer = high_resolution_clock::now();
-	class Node *nodePtr = exploreTree(game, searchList);
+	struct Node *nodePtr = exploreTree(game, searchList);
 	// ns = duration_cast<nanoseconds>(high_resolution_clock::now() - timer).count();
 	// fprintf(fp, "%lld,", ns);
 	// DB("Explored\n");
@@ -461,7 +461,7 @@ void MCTSIteration(class GameState game) {
 	// DB("Backpropogated\n\n");
 }
 
-class Move getBestMove() {
+struct Move getBestMove() {
 
 	mctsIterations = 0;
 	nodesExpanded = 0;
@@ -482,9 +482,9 @@ class Move getBestMove() {
 
 	// Find the best move and return it
 	double bestMoveScore = -1E32;
-	class Move bestMove;
+	struct Move bestMove;
 	REP(i, rootNode->childCount) {
-		class Node *child = rootNode->firstChild + i;
+		struct Node *child = rootNode->firstChild + i;
 		double curMoveScore = child->score / child->visits;
 		if (curMoveScore > bestMoveScore) {
 			bestMoveScore = curMoveScore;
@@ -494,7 +494,7 @@ class Move getBestMove() {
 	return bestMove;
 }
 
-void printMove(class Move &bestMove) {
+void printMove(struct Move &bestMove) {
 
 	DB("Metrics : \n");
 	DB("-----------------------------\n");
@@ -535,7 +535,7 @@ int main() {
 
 	readInput();
 	turnClock = clock();
-	class Move bestMove = getBestMove();
+	struct Move bestMove = getBestMove();
 	printMove(bestMove);
 	return 0;
 }
