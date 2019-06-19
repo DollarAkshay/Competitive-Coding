@@ -41,13 +41,14 @@ using namespace std::chrono;
 #define ll long long
 #define pii pair<int, int>
 #define MOD 1000000007
+#define SIZE 3000000
 
 high_resolution_clock::time_point timer;
-bool inPath[300000];
-int nodeDepth[300000];
-int parent[300000];
-int children[300000];
-vector<int> g[300000];
+int nodeDepth[SIZE];
+int parent[SIZE];
+int children[SIZE];
+vector<vector<int>> paths[SIZE];
+vector<int> g[SIZE];
 
 void scanint(int &x) {
 	register int c = getchar_unlocked();
@@ -82,19 +83,24 @@ int dfs(int node, int depth) {
 
 vector<int> getPath(int a, int b) {
 
-	vector<int> vertSet;
+	vector<int> vertSetA;
+	vector<int> vertSetB;
 	while (a != b) {
 		if (nodeDepth[a] > nodeDepth[b]) {
-			vertSet.push_back(a);
+			vertSetA.push_back(a);
 			a = parent[a];
 		}
 		else {
-			vertSet.push_back(b);
+			vertSetB.push_back(b);
 			b = parent[b];
 		}
 	}
-	vertSet.push_back(a);
-	return vertSet;
+
+	vertSetA.push_back(a);
+	FORD(i, vertSetB.size() - 1, 0) {
+		vertSetA.push_back(vertSetB[i]);
+	}
+	return vertSetA;
 }
 
 ll int solve(int a, int b) {
@@ -102,45 +108,79 @@ ll int solve(int a, int b) {
 	ll int res = 0;
 	vector<int> path = getPath(a, b);
 
-	for (const auto &u : path) {
-		inPath[u] = true;
-	}
-
 	vector<int> childPaths;
 
-	if (rand() % 100 <= 0) {
-		//DB("Path Size : %d\n", path.size());
-	}
+	REP(i, path.size()) {
 
-	for (const auto &u : path) {
-		childPaths.clear();
-		REP(i, g[u].size()) {
-			int v = g[u][i];
-			if (inPath[v] == false) {
-				if (parent[u] == v) {
-					childPaths.push_back(children[0] - children[u]);
-				}
-				else {
-					childPaths.push_back(children[v] + 1);
-				}
+		int prevNode = i > 0 ? path[i - 1] : -1;
+		int curNode = path[i];
+		int nextNode = i < path.size() - 1 ? path[i + 1] : -1;
+
+		int prevNodeIndex = -1;
+		int nextNodeIndex = -1;
+		int curEdges = g[curNode].size();
+		REP(j, curEdges) {
+			if (g[curNode][j] == prevNode) {
+				prevNodeIndex = j;
+			}
+			if (g[curNode][j] == nextNode) {
+				nextNodeIndex = j;
 			}
 		}
 
-		REP(i, childPaths.size()) {
-			res += childPaths[i];
-			FOR(j, i + 1, childPaths.size() - 1) {
-				res += childPaths[i] * childPaths[j];
-			}
+		res += paths[curNode][curEdges].back();
+		if (prevNodeIndex != -1) {
+			res += -2 * paths[curNode][prevNodeIndex].back() + paths[curNode][prevNodeIndex][prevNodeIndex];
+		}
+		if (nextNodeIndex != -1) {
+			res += -2 * paths[curNode][nextNodeIndex].back() + paths[curNode][nextNodeIndex][nextNodeIndex];
+		}
+		if (prevNodeIndex != -1 && nextNodeIndex != -1) {
+			res += 2 * paths[curNode][prevNodeIndex][nextNodeIndex];
 		}
 
 		res++;
 	}
 
-	for (const auto &u : path) {
-		inPath[u] = false;
-	}
-
 	return res;
+}
+
+void calculatePaths(int n) {
+
+	REP(k, n) {
+		int edges = g[k].size();
+		SORT(g[k], edges);
+
+		REP(i, edges) {
+			vector<int> row;
+			int rowSum = 0;
+			REP(j, edges) {
+				int childCountI = parent[k] == g[k][i] ? children[0] - children[k] : children[g[k][i]] + 1;
+				int childCountJ = parent[k] == g[k][j] ? children[0] - children[k] : children[g[k][j]] + 1;
+				if (i == j) {
+					row.push_back(childCountI);
+					rowSum += childCountI;
+				}
+				else {
+					row.push_back(childCountI * childCountJ);
+					rowSum += childCountI * childCountJ;
+				}
+			}
+			row.push_back(rowSum);
+			paths[k].push_back(row);
+		}
+
+		// Compute Column Sum
+		vector<int> row;
+		REP(j, edges + 1) {
+			int colSum = 0;
+			REP(i, edges) {
+				colSum += paths[k][i][j];
+			}
+			row.push_back(colSum);
+		}
+		paths[k].push_back(row);
+	}
 }
 
 int main() {
@@ -174,6 +214,7 @@ int main() {
 			g[v].push_back(u);
 		}
 		dfs(0, 0);
+		calculatePaths(n);
 		ll int ns = duration_cast<nanoseconds>(high_resolution_clock::now() - timer).count();
 		DB("Time Taken : %.3lf ms\n", ns / 1E6);
 
@@ -190,7 +231,7 @@ int main() {
 			int algoRes = solve(a, b);
 
 			// printf("BF   : %lld\n", bfRes);
-			// printf("%lld\n", algoRes);
+			printf("%lld\n", algoRes);
 		}
 		ns = duration_cast<nanoseconds>(high_resolution_clock::now() - timer).count();
 		DB("Time Taken : %.3lf ms\n", ns / 1E6);
