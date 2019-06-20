@@ -300,7 +300,7 @@ int simulationLosses;
 int backpropNodes;
 
 int nodeCount;
-vector<struct Node> tree(10000000);
+vector<struct Node> tree(20000000);
 struct Node *rootNode;
 
 clock_t turnClock;
