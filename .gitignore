@@ -5,6 +5,7 @@
 data/
 
 out.stackdump
+out.exe.stackdump
 
 /.vscode
 /.visualstudio
