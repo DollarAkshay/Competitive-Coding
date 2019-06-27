@@ -6,7 +6,7 @@
 
 //https: // www.hackerearth.com / challenges / competitive / june - circuits - 19 / algorithm / climbing - b0536d6a/
 
-// #pragma GCC optimize("O3", "unroll-loops", "omit-frame-pointer", "inline")
+#pragma GCC optimize("O3", "unroll-loops", "omit-frame-pointer", "inline")
 
 #include <algorithm>
 #include <assert.h>
@@ -162,4 +162,4 @@ int main() {
 	return 0;
 }
 
-//
+//Solved
