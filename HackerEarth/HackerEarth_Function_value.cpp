@@ -6,7 +6,7 @@
 
 //https://www.hackerearth.com/challenges/competitive/june-circuits-19/algorithm/june-circuits-function-value-bdd25438/
 
-#pragma GCC optimize("O3", "unroll-loops", "omit-frame-pointer", "inline")
+//#pragma GCC optimize("O3", "unroll-loops", "omit-frame-pointer", "inline")
 
 #include <algorithm>
 #include <assert.h>
@@ -28,7 +28,6 @@
 #include <vector>
 
 using namespace std;
-using namespace std::chrono;
 
 #define sp system("pause")
 #define FOR(i, a, b) for (int i = a; i <= b; i++)
@@ -42,110 +41,142 @@ using namespace std::chrono;
 #define pii pair<int, int>
 #define MOD 1000000007
 
-ll int f[1000001];
+struct Matrix2D {
 
-ll int fastPowMod(ll int b, ll int e, ll int m) {
+	vector<vector<ll int>> m;
+	int r, c;
 
-	if (e == 0) {
-		return 1;
-	}
-	else if (e % 2 == 1) {
-		return fastPowMod(b, e - 1, m) * b % m;
-	}
-	else {
-		ll int res = fastPowMod(b, e / 2, m);
-		return (res * res) % m;
-	}
-}
-
-// C function for extended Euclidean Algorithm
-ll int gcdExtended(ll int a, ll int b, ll int *x, ll int *y) {
-	// Base Case
-	if (a == 0) {
-		*x = 0, *y = 1;
-		return b;
+	Matrix2D() {
+		r = c = -1;
 	}
 
-	ll int x1, y1; // To store results of recursive call
-	ll int gcd = gcdExtended(b % a, a, &x1, &y1);
-
-	// Update x and y using results of recursive
-	// call
-	*x = y1 - (b / a) * x1;
-	*y = x1;
-
-	return gcd;
-}
-
-// Function to find modulo inverse of a
-ll int modInverse(ll int a, ll int m) {
-	ll int x, y;
-	ll int g = gcdExtended(a, m, &x, &y);
-	if (g != 1) {
-		assert(1 == 0);
+	Matrix2D(int r, int c) {
+		this->r = r;
+		this->c = c;
+		vector<vector<ll int>> zeroVector(r, vector<ll int>(c, 0));
+		m = zeroVector;
 	}
-	else {
-		// m is added to handle negative x
-		int res = (x % m + m) % m;
+
+	Matrix2D(vector<vector<ll int>> a) {
+		r = a.size();
+		c = a[0].size();
+		m = a;
+	}
+
+	Matrix2D identity() {
+		assert(r == c);
+		Matrix2D res(r, c);
+		REP(k, r) {
+			res.m[k][k] = 1;
+		}
 		return res;
 	}
-}
 
-ll int bruteforce(int l, int r, int m) {
-	ll int res = 0;
-	FOR(i, l, r) {
-		res = (res + f[i]) % m;
-	}
-	return res;
-}
-
-ll int evenSum(ll int l, ll int r, int m) {
-	ll int seqL = (l + 1) / 2;
-	ll int seqR = r / 2;
-
-	// printf("Even L/R  : %lld/%lld\n", seqL, seqR);
-	ll int res = (4 + 3 * fastPowMod(-1, seqL, m) + 3 * fastPowMod(-1, seqR, m) - fastPowMod(3, seqL, m) + fastPowMod(3, seqR + 1, m) - 4 * seqL % m + 4 * seqR % m) * modInverse(4, m) % m;
-	return (res + m) % m;
-}
-
-ll int oddSum(ll int l, ll int r, int m) {
-
-	ll int seqL = l / 2;
-	ll int seqR = (r - 1) / 2;
-
-	// printf("Odd L/R  : %lld/%lld\n", seqL, seqR);
-	ll int res = (fastPowMod(3, seqR + 1, m) - fastPowMod(3, seqL, m)) * modInverse(2, m) % m;
-	return (res + m) % m;
-}
-
-ll int preCalc() {
-
-	f[1] = f[2] = 1;
-	FOR(i, 3, 1000000) {
-		if (i % 2 == 0) {
-			f[i] == (2 * f[i - 1] - f[i - 2] + 2) % MOD;
+	void print() {
+		printf("Matrix Size : %d x %d\n", r, c);
+		REP(i, r) {
+			REP(j, c) {
+				printf("%lld ", m[i][j]);
+			}
+			printf("\n");
 		}
-		else {
-			f[i] = (3 * f[i - 2]) % MOD;
-		}
+		printf("\n");
 	}
+
+	Matrix2D operator*(Matrix2D const &rhs) {
+
+		assert(c == rhs.r);
+
+		Matrix2D res(r, rhs.c);
+
+		REP(i, r) {
+			REP(j, rhs.c) {
+				REP(k, c) {
+					res.m[i][j] += m[i][k] * rhs.m[k][j];
+				}
+			}
+		}
+
+		return res;
+	}
+
+	Matrix2D operator%(int modVal) {
+
+		REP(i, r) {
+			REP(j, c) {
+				m[i][j] %= modVal;
+			}
+		}
+
+		return *this;
+	}
+};
+
+Matrix2D tOdd = Matrix2D({{1, 1, 0, 0},
+						  {0, 0, 1, 0},
+						  {0, 3, 0, 0},
+						  {0, 0, 0, 1}});
+
+Matrix2D tEven = Matrix2D({{1, 1, 0, 0},
+						   {0, 0, 1, 0},
+						   {0, -1, 2, 1},
+						   {0, 0, 0, 1}});
+
+Matrix2D t = tEven * tOdd;
+Matrix2D f_1 = Matrix2D({{0},
+						 {1},
+						 {1},
+						 {2}});
+
+Matrix2D fastPowMod(Matrix2D b, ll int e, ll int m) {
+
+	if (e == 0) {
+		return b.identity();
+	}
+	else if (e % 2 == 0) {
+		Matrix2D res = fastPowMod(b, e / 2, m);
+		return res * res % m;
+	}
+	else {
+		Matrix2D res = fastPowMod(b, e / 2, m);
+		return (res * res % m) * b % m;
+	}
+}
+
+ll int getSumMod(ll int n, ll int m) {
+
+	Matrix2D f_n;
+
+	if (n % 2 == 0) {
+		f_n = tOdd * fastPowMod(t, (n - 2) / 2, m) % m * f_1 % m;
+	}
+	else {
+		f_n = fastPowMod(t, (n - 1) / 2, m) * f_1 % m;
+	}
+
+	return f_n.m[0][0];
 }
 
 int main() {
 
-	preCalc();
+	getSumMod(1, MOD);
+	getSumMod(2, MOD);
+	getSumMod(3, MOD);
+	getSumMod(4, MOD);
+	getSumMod(5, MOD);
+	getSumMod(6, MOD);
 
-	int t, m;
-	scanf("%d %d", &t, &m);
-	REP(tc, t) {
+	int tc, m;
+	scanf("%d %d", &tc, &m);
+	REP(ti, tc) {
 		ll int l, r;
 		scanf("%lld %lld", &l, &r);
+		ll int sumR = getSumMod(r + 1, m);
+		ll int sumL = getSumMod(l, m);
+		//printf("%lld %lld\n", sumR, sumL);
 
-		// ll int bfRes = bruteforce(l, r, m);
-		// printf("BF   : %lld\n", bfRes);
-
-		ll int algoRes = (oddSum(l, r, m) + evenSum(l, r, m)) % m;
-		printf("%lld\n", algoRes);
+		ll int res = ((sumR - sumL) % m + m) % m;
+		printf("%lld\n", res);
 	}
 	return 0;
 }
