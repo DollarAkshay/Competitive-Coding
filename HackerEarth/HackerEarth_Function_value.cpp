@@ -159,13 +159,6 @@ ll int getSumMod(ll int n, ll int m) {
 
 int main() {
 
-	getSumMod(1, MOD);
-	getSumMod(2, MOD);
-	getSumMod(3, MOD);
-	getSumMod(4, MOD);
-	getSumMod(5, MOD);
-	getSumMod(6, MOD);
-
 	int tc, m;
 	scanf("%d %d", &tc, &m);
 	REP(ti, tc) {
@@ -181,4 +174,4 @@ int main() {
 	return 0;
 }
 
-//Partially Solved
+//Solved
