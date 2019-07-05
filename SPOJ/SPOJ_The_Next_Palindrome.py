@@ -1,5 +1,8 @@
-t = int(input())
 
+# https://www.spoj.com/problems/PALIN/
+
+
+t = int(input())
 
 for tc in range(t):
     n = input()
