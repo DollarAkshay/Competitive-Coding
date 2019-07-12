@@ -114,6 +114,7 @@ int main() {
 
 	int t;
 	scanf("%d", &t);
+
 	REP(tc, t) {
 		ll int res1, res2;
 		printf("1 31623\n");
@@ -124,13 +125,10 @@ int main() {
 		vector<int> factors = primeFactors(multiple);
 		int n = numberWithUniqueModValues(factors);
 
-		if (n == -1) {
-			assert(1 == 0);
-		}
-
 		printf("1 %d\n", n);
 		fflush(stdout);
 		scanf("%lld", &res2);
+
 		REP(i, factors.size()) {
 			int modVal = (ll int)n * n % factors[i];
 			if (modVal == res2) {
@@ -141,9 +139,6 @@ int main() {
 
 		string s;
 		cin >> s;
-		if (s == "No") {
-			return 1;
-		}
 	}
 	return 0;
 }
