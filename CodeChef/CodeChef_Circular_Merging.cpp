@@ -6,7 +6,7 @@
 
 //https://www.codechef.com/JULY19A/problems/CIRMERGE
 
-#pragma GCC optimize("O3", "unroll-loops", "omit-frame-pointer", "inline")
+//#pragma GCC optimize("O3", "unroll-loops", "omit-frame-pointer", "inline")
 
 #include <algorithm>
 #include <assert.h>
@@ -49,6 +49,20 @@ void printVector(vector<ll int> a) {
 	printf("\n");
 }
 
+void compressPair(vector<ll int> &a, int i) {
+	ll int val = a[i] + a[(i + 1) % a.size()];
+	if (i == a.size() - 1) {
+		a.erase(a.begin() + i);
+		a.erase(a.begin() + 0);
+		a.insert(a.begin() + 0, val);
+	}
+	else {
+		a.erase(a.begin() + i);
+		a.erase(a.begin() + i);
+		a.insert(a.begin() + i, val);
+	}
+}
+
 ll int bruteforce(vector<ll int> a) {
 
 	if (a.size() == 1) {
@@ -68,7 +82,7 @@ ll int bruteforce(vector<ll int> a) {
 
 	cost = a.front() + a.back();
 	a.erase(a.begin());
-	a.erase(a.end());
+	a.erase(a.end() - 1);
 	a.insert(a.begin(), cost);
 	res = min(res, cost + bruteforce(a));
 
@@ -76,34 +90,31 @@ ll int bruteforce(vector<ll int> a) {
 }
 
 ll int solve(vector<ll int> a) {
-	ll int res = 0;
 
-	while (a.size() > 1) {
+	if (a.size() == 1) {
+		return 0;
+	}
 
-		// Find smallest pair
-		ll int minVal = (ll int)1E18;
-		int pos = -1;
-		REP(i, a.size()) {
-			ll int pairVal = a[i] + a[(i + 1) % a.size()];
-			if (pairVal < minVal) {
-				minVal = pairVal;
-				pos = i;
-			}
+	ll int res = (ll int)1E18;
+
+	ll int minVal = (ll int)1E18;
+	vector<int> pos;
+	REP(i, a.size()) {
+		ll int pairVal = a[i] + a[(i + 1) % a.size()];
+		if (pairVal < minVal) {
+			minVal = pairVal;
+			pos.clear();
+			pos.push_back(i);
 		}
-
-		//Do operation
-		if (pos == a.size() - 1) {
-			a.erase(a.begin() + pos);
-			a.erase(a.begin() + 0);
-			a.insert(a.begin() + 0, minVal);
+		else if (pairVal == minVal) {
+			pos.push_back(i);
 		}
-		else {
-			a.erase(a.begin() + pos);
-			a.erase(a.begin() + pos);
-			a.insert(a.begin() + pos, minVal);
-		}
+	}
 
-		res += minVal;
+	REP(i, pos.size()) {
+		vector<ll int> b = a;
+		compressPair(b, pos[i]);
+		res = min(res, minVal + solve(b));
 	}
 
 	return res;
@@ -126,11 +137,18 @@ int main() {
 		}
 
 		ll int bfRes = bruteforce(a);
-		ll int algoRes = solve(a);
-		printf("BF   : %lld\n", bfRes);
-		printf("ALGO : %lld\n", algoRes);
+		// ll int algoRes = solve(a);s
+
+		// if (bfRes != algoRes) {
+		// 	printVector(a);
+		// 	printf("BF   : %lld\n", bfRes);
+		// 	printf("ALGO : %lld\n\n", algoRes);
+		// }
+
+		printf("%lld\n", bfRes);
 	}
+
 	return 0;
 }
 
-//
+// Bruteforce TLE
