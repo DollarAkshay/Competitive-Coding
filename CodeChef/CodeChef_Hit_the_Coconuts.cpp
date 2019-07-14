@@ -44,8 +44,8 @@ using namespace std::chrono;
 #define MAX 1000
 
 int a[MAX];
-int sum[MAX + 1];
-ll int dp[MAX][MAX];
+ll int sum[MAX + 1];
+ll int dp[MAX + 1][MAX + 1];
 
 int main() {
 
@@ -73,11 +73,14 @@ int main() {
 					dp[i][j] = 0;
 				}
 				else {
-					dp[i][j] = min(a[i - 1] + dp[i - 1][j - 1], a[0] + dp[i - 1][j]);
+					dp[i][j] = (ll int)1E18;
+					FOR(k, 1, i - j + 1) {
+						dp[i][j] = min(dp[i][j], k * a[i - k] + dp[i - k][j - 1]);
+					}
 				}
-				// DB("%3d ", dp[i][j]);
+				DB("%3d ", dp[i][j]);
 			}
-			// DB("\n");
+			DB("\n");
 		}
 
 		ll int res = dp[n][z];
@@ -87,3 +90,5 @@ int main() {
 }
 
 // Wrong Answer
+// 6 6
+// 20 30 50 70 120 150
