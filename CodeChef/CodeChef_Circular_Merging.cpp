@@ -42,6 +42,8 @@ using namespace std::chrono;
 #define pii pair<int, int>
 #define MOD 1000000007
 
+ll int bestCost;
+
 void printVector(vector<ll int> a) {
 	REP(i, a.size()) {
 		printf("%d ", a[i]);
@@ -49,7 +51,7 @@ void printVector(vector<ll int> a) {
 	printf("\n");
 }
 
-void compressPair(vector<ll int> &a, int i) {
+int compressPair(vector<ll int> &a, int i) {
 	ll int val = a[i] + a[(i + 1) % a.size()];
 	if (i == a.size() - 1) {
 		a.erase(a.begin() + i);
@@ -61,6 +63,7 @@ void compressPair(vector<ll int> &a, int i) {
 		a.erase(a.begin() + i);
 		a.insert(a.begin() + i, val);
 	}
+	return val;
 }
 
 ll int bruteforce(vector<ll int> a) {
@@ -71,20 +74,11 @@ ll int bruteforce(vector<ll int> a) {
 
 	ll int res = (ll int)1E18;
 	ll int cost;
-	REP(i, a.size() - 1) {
+	REP(i, a.size()) {
 		vector<ll int> b = a;
-		cost = b[i] + b[i + 1];
-		b.erase(b.begin() + i);
-		b.erase(b.begin() + i);
-		b.insert(b.begin() + i, cost);
+		cost = compressPair(b, i);
 		res = min(res, cost + bruteforce(b));
 	}
-
-	cost = a.front() + a.back();
-	a.erase(a.begin());
-	a.erase(a.end() - 1);
-	a.insert(a.begin(), cost);
-	res = min(res, cost + bruteforce(a));
 
 	return res;
 }
@@ -94,30 +88,62 @@ ll int solve(vector<ll int> a) {
 	if (a.size() == 1) {
 		return 0;
 	}
-
-	ll int res = (ll int)1E18;
-
-	ll int minVal = (ll int)1E18;
-	vector<int> pos;
-	REP(i, a.size()) {
-		ll int pairVal = a[i] + a[(i + 1) % a.size()];
-		if (pairVal < minVal) {
-			minVal = pairVal;
-			pos.clear();
-			pos.push_back(i);
-		}
-		else if (pairVal == minVal) {
-			pos.push_back(i);
-		}
+	else if (a.size() == 2) {
+		return a[0] + a[1];
 	}
+	else if (a.size() == 3) {
+		ll int minCost = (ll int)1E18;
+		vector<int> pos;
+		REP(i, a.size()) {
+			REP(j, a.size() - 1) {
+				vector<ll int> b = a;
+				ll int curCost = 0;
+				curCost += compressPair(b, i);
+				curCost += compressPair(b, j);
+				// printf("Cost for %d,%d : %d\n", i, j, curCost);
+				if (curCost < minCost) {
+					minCost = curCost;
+					pos.clear();
+					pos.push_back(i);
+					pos.push_back(j);
+				}
+			}
+		}
 
-	REP(i, pos.size()) {
-		vector<ll int> b = a;
-		compressPair(b, pos[i]);
-		res = min(res, minVal + solve(b));
+		ll int cost1 = compressPair(a, pos[0]);
+		// ll int cost2 = compressPair(a, pos[1]);
+		// printVector(a);
+		return cost1 + solve(a);
 	}
+	else {
+		ll int minCost = (ll int)1E18;
+		vector<int> pos;
+		REP(i, a.size()) {
+			REP(j, a.size() - 1) {
+				REP(k, a.size() - 2) {
+					vector<ll int> b = a;
+					ll int curCost = 0;
+					curCost += compressPair(b, i);
+					curCost += compressPair(b, j);
+					curCost += compressPair(b, k);
+					// printf("Cost for %d,%d : %d\n", i, j, curCost);
+					if (curCost < minCost) {
+						minCost = curCost;
+						pos.clear();
+						pos.push_back(i);
+						pos.push_back(j);
+						pos.push_back(k);
+					}
+				}
+			}
+		}
 
-	return res;
+		ll int cost1 = compressPair(a, pos[0]);
+		// ll int cost2 = compressPair(a, pos[1]);
+		// ll int cost3 = compressPair(a, pos[2]);
+		// printVector(a);
+		return cost1 + solve(a);
+	}
 }
 
 int main() {
@@ -137,15 +163,15 @@ int main() {
 		}
 
 		ll int bfRes = bruteforce(a);
-		// ll int algoRes = solve(a);s
+		ll int algoRes = solve(a);
 
-		// if (bfRes != algoRes) {
-		// 	printVector(a);
-		// 	printf("BF   : %lld\n", bfRes);
-		// 	printf("ALGO : %lld\n\n", algoRes);
-		// }
+		if (bfRes != algoRes) {
+			printVector(a);
+			printf("BF   : %lld\n", bfRes);
+			printf("ALGO : %lld\n\n", algoRes);
+		}
 
-		printf("%lld\n", bfRes);
+		// printf("%lld\n", bfRes);
 	}
 
 	return 0;
