@@ -69,4 +69,4 @@ int main() {
 	return 0;
 }
 
-//Pre-tests passed
+//Solved
