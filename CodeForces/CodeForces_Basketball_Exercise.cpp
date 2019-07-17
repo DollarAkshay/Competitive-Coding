@@ -85,4 +85,4 @@ int main() {
 	return 0;
 }
 
-//Pretests passed
+//Solved
