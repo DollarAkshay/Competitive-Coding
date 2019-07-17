@@ -4,7 +4,7 @@
  *                  *
  *~~~~~~~~~~~~~~~~~~*/
 
-//
+//https://codeforces.com/contest/1195/problem/A
 
 #pragma GCC optimize("O3", "unroll-loops", "omit-frame-pointer", "inline")
 
