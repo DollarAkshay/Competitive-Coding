@@ -45,6 +45,29 @@ using namespace std::chrono;
 int a[1000000];
 int f[100];
 
+string fun(int a, int b) {
+
+	string res = "";
+	while (a > 0 && b > 0) {
+		res += to_string(b % 10);
+		res += to_string(a % 10);
+		b /= 10;
+		a /= 10;
+	}
+
+	while (a > 0) {
+		res += to_string(a % 10);
+		a /= 10;
+	}
+
+	while (b > 0) {
+		res += to_string(b % 10);
+		b /= 10;
+	}
+	REV(res, res.size());
+	return res;
+}
+
 ll int fastPowMod(ll int b, ll int e) {
 
 	if (e == 0) {
@@ -89,7 +112,7 @@ int main() {
 					res = (res + (d * fastPowMod(10, 2 * k - 1) * f[j] % MOD) + (d * fastPowMod(10, 2 * k - 2) * f[j] % MOD)) % MOD;
 				}
 				else {
-					res = (res + (d * fastPowMod(10, j * 2 + (k - j - 1)) * f[j] % MOD)) % MOD;
+					res = (res + (d * fastPowMod(10, j * 2 + (k - j - 1)) * 2 * f[j] % MOD)) % MOD;
 				}
 			}
 			k += 1;
@@ -102,4 +125,4 @@ int main() {
 	return 0;
 }
 
-//
+// Solved
