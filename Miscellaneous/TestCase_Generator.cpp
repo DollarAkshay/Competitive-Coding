@@ -180,13 +180,13 @@ void generateRandomTree(int n) {
 
 int main() {
 
-	ll int t = randomInt(100000, 100000);
-	fprintf(fp, "%lld 1000000007\n", t);
+	ll int t = randomInt(100, 100);
+	fprintf(fp, "%lld\n", t);
 
 	REP(tc, t) {
-		ll int l = randomInt(1, 10000 - 1);
-		ll int r = randomInt(l, 10000);
-		fprintf(fp, "%lld %lld\n", l, r);
+		ll int n = randomInt(5, 7);
+		fprintf(fp, "%d\n", n);
+		printArray(randomArray(1, 10, n));
 	}
 
 	printf("\nDONE :)\n\n");
