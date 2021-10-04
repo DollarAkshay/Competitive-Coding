@@ -36,6 +36,8 @@
         "unordered_set": "cpp",
         "xiosbase": "cpp",
         "chrono": "cpp",
-        "ratio": "cpp"
-    }
+        "ratio": "cpp",
+        "xlocnum": "cpp"
+    },
+    "python.pythonPath": "C:\\Program Files\\Python 3.6.3\\python.exe"
 }
