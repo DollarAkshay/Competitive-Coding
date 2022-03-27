@@ -37,7 +37,12 @@
         "xiosbase": "cpp",
         "chrono": "cpp",
         "ratio": "cpp",
-        "xlocnum": "cpp"
+        "xlocnum": "cpp",
+        "*.tcc": "cpp",
+        "regex": "cpp",
+        "iosfwd": "cpp",
+        "iterator": "cpp"
     },
-    "python.pythonPath": "C:\\Program Files\\Python 3.6.3\\python.exe"
+    "python.pythonPath": "C:\\Program Files\\Python 3.6.3\\python.exe",
+    "python.linting.enabled": true
 }
